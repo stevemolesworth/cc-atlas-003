@@ -1,0 +1,698 @@
+import { useEffect, useState } from 'react';
+import {
+  AIChatAIMessage,
+  AIChatBox,
+  AIChatContent,
+  AIChatContextProvider,
+  AIChatMessageAvatar,
+  AIChatMessageHeader,
+  AIChatMessageTextBlock,
+  AIChatThinkingIndicator,
+  AIChatUserMessage,
+  OverflowBreadcrumbs,
+  PageHeader,
+  SectionHeader,
+  useAIChatContext,
+} from '@diligentcorp/atlas-react-bundle';
+import { Box, Button, Card, CardContent, Container, LinearProgress, List, ListItem, ListItemText, Stack, Typography } from '@mui/material';
+import ReactECharts from 'echarts-for-react';
+import { NavLink } from 'react-router';
+
+const GENERATION_STEPS = [
+  { progress: 0,   text: 'Reading data from Policy Manager' },
+  { progress: 20,  text: 'Reading data from Vault' },
+  { progress: 42,  text: 'Reading data from Training' },
+  { progress: 60,  text: 'Analysing patterns and trends' },
+  { progress: 78,  text: 'Generating recommendations' },
+  { progress: 92,  text: 'Finalising report' },
+  { progress: 100, text: 'Report generated' },
+];
+
+const SOURCE_TILES = [
+  { label: 'Policy Manager', records: 847,  lastUpdated: '18 Mar 2026' },
+  { label: 'Vault',          records: 30,   lastUpdated: '13 Mar 2026' },
+  { label: 'Training',       records: 1204, lastUpdated: '15 Mar 2026' },
+];
+
+function GeneratingScreen({ onComplete }: { onComplete: () => void }) {
+  const [stepIndex, setStepIndex] = useState(0);
+
+  useEffect(() => {
+    if (stepIndex < GENERATION_STEPS.length - 1) {
+      const t = setTimeout(() => setStepIndex((i) => i + 1), 417);
+      return () => clearTimeout(t);
+    }
+  }, [stepIndex]);
+
+  const { progress, text } = GENERATION_STEPS[stepIndex];
+  const isDone = progress === 100;
+
+  return (
+    <Box
+      sx={{
+        height: 'calc(100dvh - 64px)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 5,
+        px: 4,
+      }}
+    >
+      <Typography variant="h1" textAlign="center">
+        Connected Compliance
+      </Typography>
+
+      <Stack direction="row" gap={3} sx={{ width: '100%', maxWidth: 800 }}>
+        {SOURCE_TILES.map((tile) => (
+          <Card key={tile.label} sx={{ flex: 1 }}>
+            <CardContent>
+              <Typography variant="h3" component="h2" fontWeight={600} gutterBottom>
+                {tile.label}
+              </Typography>
+              <Typography variant="h2" component="p">
+                {tile.records.toLocaleString()}
+              </Typography>
+              <Typography variant="textSm" color="text.secondary">
+                records
+              </Typography>
+              <Typography variant="textSm" color="text.secondary" display="block" sx={{ mt: 1 }}>
+                Last updated {tile.lastUpdated}
+              </Typography>
+            </CardContent>
+          </Card>
+        ))}
+      </Stack>
+
+      <Box sx={{ width: '100%', maxWidth: 800 }}>
+        <LinearProgress
+          variant="determinate"
+          value={progress}
+          sx={{ height: 6, borderRadius: 3, mb: 2 }}
+        />
+        <Box
+          key={stepIndex}
+          sx={{
+            '@keyframes fadeInUp': {
+              from: { opacity: 0, transform: 'translateY(6px)' },
+              to:   { opacity: 1, transform: 'translateY(0)' },
+            },
+            animation: 'fadeInUp 0.25s ease',
+            textAlign: 'center',
+          }}
+        >
+          <Typography
+            variant="textMd"
+            color={isDone ? 'success.main' : 'text.secondary'}
+            sx={{ fontWeight: isDone ? 600 : 400 }}
+          >
+            {text}
+          </Typography>
+        </Box>
+        {isDone && (
+          <Box
+            sx={{
+              '@keyframes fadeInUp': {
+                from: { opacity: 0, transform: 'translateY(6px)' },
+                to:   { opacity: 1, transform: 'translateY(0)' },
+              },
+              animation: 'fadeInUp 0.3s ease 0.15s both',
+              display: 'flex',
+              justifyContent: 'center',
+              mt: 3,
+            }}
+          >
+            <Button variant="contained" size="large" onClick={onComplete}>
+              View Report
+            </Button>
+          </Box>
+        )}
+      </Box>
+    </Box>
+  );
+}
+
+interface Message {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  time: string;
+}
+
+const DISCUSSION_RESPONSES = [
+  "Great question. Based on the data in this report, harassment and fraud together account for 7 of the 10 most aged open cases — that's a significant concentration worth discussing.",
+  'Looking at the regional breakdown, the UK leads with 11 cases compared to just 4 from Singapore. There are a few possible explanations worth exploring — would you like to dig into that?',
+  'The Q1 2026 figure of 4 submissions is the highest single-quarter total on record. That trend line is worth unpacking in more detail.',
+  'Legal & Compliance having the highest departmental case count is notable given its governance remit. The report flags this as an area needing specific management attention.',
+  'The App channel now accounts for nearly half of all submissions. That shift away from manual intake and Vault Talk is a meaningful signal about reporter preference.',
+];
+
+function nowTime() {
+  return new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+}
+
+const INITIAL_MESSAGES: Message[] = [
+  {
+    id: '0',
+    role: 'assistant',
+    content: 'This report contains 5 recommended actions. Would you like to discuss any of them?',
+    time: nowTime(),
+  },
+];
+
+export default function ComplianceReportsPage() {
+  const [phase, setPhase] = useState<'generating' | 'report'>('generating');
+
+  if (phase === 'generating') {
+    return <GeneratingScreen onComplete={() => setPhase('report')} />;
+  }
+
+  return (
+    <AIChatContextProvider initialHasStartedChat>
+      <ReportContent />
+    </AIChatContextProvider>
+  );
+}
+
+function ReportContent() {
+  const { isGenerating, setIsGenerating } = useAIChatContext();
+  const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES);
+
+  function handleSubmit(prompt: string) {
+    setMessages((prev) => [...prev, { id: Date.now().toString(), role: 'user', content: prompt, time: nowTime() }]);
+    const delay = 900 + Math.random() * 1100;
+    setTimeout(() => {
+      const response = DISCUSSION_RESPONSES[Math.floor(Math.random() * DISCUSSION_RESPONSES.length)];
+      setMessages((prev) => [...prev, { id: (Date.now() + 1).toString(), role: 'assistant', content: response, time: nowTime() }]);
+      setIsGenerating(false);
+    }, delay);
+  }
+
+  return (
+    <Container
+      sx={{
+        py: 2,
+        height: 'calc(100dvh - 64px)',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+      }}
+    >
+      <Stack gap={2} sx={{ flex: 1, minHeight: 0 }}>
+        <PageHeader
+          pageTitle="Compliance reports"
+          breadcrumbs={
+            <OverflowBreadcrumbs
+              leadingElement={<span>Connected Compliance</span>}
+              items={[{ id: 'compliance-reports', label: 'Compliance reports', url: '/compliance-reports' }]}
+              hideLastItem
+              aria-label="Breadcrumbs"
+            >
+              {({ label, url }) => <NavLink to={url}>{label}</NavLink>}
+            </OverflowBreadcrumbs>
+          }
+        />
+
+        {/* Two-column layout */}
+        <Stack direction="row" gap={2} sx={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
+          {/* Canvas */}
+          <Box
+            sx={({ palette }) => ({
+              flex: 2,
+              minWidth: 0,
+              overflowY: 'auto',
+              overflowX: 'hidden',
+              border: '1px solid',
+              borderColor: palette.divider,
+              borderRadius: 2,
+              p: 3,
+            })}
+          >
+            <ReportBody />
+          </Box>
+
+          {/* Chat */}
+          <Box
+            sx={({ palette }) => ({
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              border: '1px solid',
+              borderColor: palette.divider,
+              borderRadius: 2,
+              overflow: 'hidden',
+              minWidth: 0,
+            })}
+          >
+            <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto', px: 2, pt: 2, pb: 4 }}>
+              <AIChatContent>
+                {messages.map((msg) =>
+                  msg.role === 'user' ? (
+                    <AIChatUserMessage
+                      key={msg.id}
+                      alignment="end"
+                      message={msg.content}
+                      header={<AIChatMessageHeader name="You" time={msg.time} avatar={<AIChatMessageAvatar uniqueId="current-user" initials="YO" />} />}
+                    />
+                  ) : (
+                    <AIChatAIMessage
+                      key={msg.id}
+                      header={
+                        <AIChatMessageHeader name="AI assistant" time={msg.time} avatar={<AIChatMessageAvatar uniqueId="ai-assistant" initials="AI" />} />
+                      }
+                    >
+                      <AIChatMessageTextBlock>{msg.content}</AIChatMessageTextBlock>
+                    </AIChatAIMessage>
+                  ),
+                )}
+                {isGenerating && (
+                  <AIChatAIMessage
+                    header={<AIChatMessageHeader name="AI assistant" time={nowTime()} avatar={<AIChatMessageAvatar uniqueId="ai-assistant" initials="AI" />} />}
+                  >
+                    <AIChatThinkingIndicator label="Thinking…" />
+                  </AIChatAIMessage>
+                )}
+              </AIChatContent>
+            </Box>
+
+            <Box sx={{ flexShrink: 0, px: 2, pb: 2 }}>
+              <AIChatBox
+                onSubmit={handleSubmit}
+                onStop={() => setIsGenerating(false)}
+                isUploadAvailable={false}
+                slotProps={{ textField: { placeholder: 'What would you like to explore?' } }}
+              />
+            </Box>
+          </Box>
+        </Stack>
+      </Stack>
+    </Container>
+  );
+}
+
+// Style guide color constants — do not use raw values outside this block
+const VIZ = {
+  categorical: ['#4BC8C8', '#E8674A', '#F5A623', '#5B9BD5', '#A8B400', '#8B6DB0', '#E07DA0', '#5BAD6F'],
+  gradient:    ['#4BC8C8', '#5BAD6F', '#A8B400', '#F5A623', '#E8674A'],
+  teal:        '#4BC8C8',
+  softBlue:    '#5B9BD5',
+  alert:       '#E8674A',
+  success:     '#5BAD6F',
+  amber:       '#F5A623',
+  neutral:     '#9CA3AF',
+  gridline:    '#E0E0E0',
+  axisLabel:   '#6B7280',
+  dataLabel:   '#1A1A2E',
+} as const;
+
+const AXIS_DEFAULTS = {
+  axisLine:  { lineStyle: { color: VIZ.gridline } },
+  axisLabel: { color: VIZ.axisLabel },
+  splitLine: { lineStyle: { color: VIZ.gridline } },
+};
+
+function CaseVolumeTrendChart() {
+  const option = {
+    tooltip: { trigger: 'axis' },
+    xAxis: {
+      type: 'category',
+      data: ['2022', '2023', '2024', '2025', '2026 (Q1)'],
+      axisLine: AXIS_DEFAULTS.axisLine,
+      axisLabel: AXIS_DEFAULTS.axisLabel,
+    },
+    yAxis: {
+      type: 'value',
+      name: 'Cases',
+      nameTextStyle: { color: VIZ.axisLabel },
+      splitLine: AXIS_DEFAULTS.splitLine,
+      axisLabel: AXIS_DEFAULTS.axisLabel,
+    },
+    series: [
+      {
+        name: 'Cases submitted',
+        type: 'bar',
+        data: [5, 6, 7, 8, 4],
+        itemStyle: { color: VIZ.teal, borderRadius: [4, 4, 0, 0] },
+        label: { show: true, position: 'top', color: VIZ.dataLabel },
+      },
+    ],
+    grid: { left: 40, right: 20, top: 30, bottom: 30 },
+  };
+  return <ReactECharts option={option} style={{ height: 240, width: '100%' }} />;
+}
+
+function CaseCategoriesChart() {
+  const categories = ['Data Privacy', 'Bribery', 'Health & Safety', 'Discrimination', 'Fraud', 'Harassment'];
+  const values = [1, 1, 2, 6, 9, 11];
+  const option = {
+    tooltip: { trigger: 'axis', formatter: '{b}: {c} cases' },
+    xAxis: {
+      type: 'value',
+      max: 15,
+      splitLine: AXIS_DEFAULTS.splitLine,
+      axisLabel: AXIS_DEFAULTS.axisLabel,
+    },
+    yAxis: {
+      type: 'category',
+      data: categories,
+      axisLine: AXIS_DEFAULTS.axisLine,
+      axisLabel: AXIS_DEFAULTS.axisLabel,
+    },
+    series: [
+      {
+        type: 'bar',
+        data: values.map((v, i) => ({
+          value: v,
+          itemStyle: { color: VIZ.categorical[i % VIZ.categorical.length], borderRadius: [0, 4, 4, 0] },
+        })),
+        label: { show: true, position: 'right', color: VIZ.dataLabel },
+      },
+    ],
+    grid: { left: 20, right: 50, top: 10, bottom: 30, containLabel: true },
+  };
+  return <ReactECharts option={option} style={{ height: 240, width: '100%' }} />;
+}
+
+function IntakeChannelsChart() {
+  const option = {
+    tooltip: { trigger: 'axis' },
+    xAxis: {
+      type: 'value',
+      max: 18,
+      splitLine: AXIS_DEFAULTS.splitLine,
+      axisLabel: AXIS_DEFAULTS.axisLabel,
+    },
+    yAxis: {
+      type: 'category',
+      data: ['Vault Talk', 'Manual intake', 'Open Reporting', 'App'],
+      axisLine: AXIS_DEFAULTS.axisLine,
+      axisLabel: AXIS_DEFAULTS.axisLabel,
+    },
+    series: [
+      {
+        type: 'bar',
+        data: [3, 6, 7, 14],
+        itemStyle: { color: VIZ.softBlue, borderRadius: [0, 4, 4, 0] },
+        label: { show: true, position: 'right', color: VIZ.dataLabel },
+      },
+    ],
+    grid: { left: 20, right: 40, top: 10, bottom: 30, containLabel: true },
+  };
+  return <ReactECharts option={option} style={{ height: 200, width: '100%' }} />;
+}
+
+function RegionalDistributionChart() {
+  // Ranked low → high, gradient applied accordingly; Unknown gets neutral
+  const option = {
+    tooltip: { trigger: 'axis' },
+    xAxis: {
+      type: 'value',
+      max: 15,
+      splitLine: AXIS_DEFAULTS.splitLine,
+      axisLabel: AXIS_DEFAULTS.axisLabel,
+    },
+    yAxis: {
+      type: 'category',
+      data: ['Unknown', 'Singapore', 'Germany', 'United States', 'United Kingdom'],
+      axisLine: AXIS_DEFAULTS.axisLine,
+      axisLabel: AXIS_DEFAULTS.axisLabel,
+    },
+    series: [
+      {
+        name: 'Cases',
+        type: 'bar',
+        data: [
+          { value: 4,  itemStyle: { color: VIZ.neutral,      borderRadius: [0, 4, 4, 0] } },
+          { value: 4,  itemStyle: { color: VIZ.gradient[0],  borderRadius: [0, 4, 4, 0] } },
+          { value: 5,  itemStyle: { color: VIZ.gradient[1],  borderRadius: [0, 4, 4, 0] } },
+          { value: 7,  itemStyle: { color: VIZ.gradient[3],  borderRadius: [0, 4, 4, 0] } },
+          { value: 11, itemStyle: { color: VIZ.gradient[4],  borderRadius: [0, 4, 4, 0] } },
+        ],
+        label: { show: true, position: 'right', color: VIZ.dataLabel },
+      },
+    ],
+    grid: { left: 20, right: 40, top: 10, bottom: 30, containLabel: true },
+  };
+  return <ReactECharts option={option} style={{ height: 220, width: '100%' }} />;
+}
+
+function CaseStatusChart() {
+  // Semantic colors: alert for unresolved, amber for in-progress, success for closed
+  const statusColors = [VIZ.alert, VIZ.softBlue, VIZ.amber, VIZ.success];
+  const option = {
+    tooltip: { trigger: 'axis', formatter: '{b}: {c} cases' },
+    xAxis: {
+      type: 'value',
+      max: 16,
+      splitLine: AXIS_DEFAULTS.splitLine,
+      axisLabel: AXIS_DEFAULTS.axisLabel,
+    },
+    yAxis: {
+      type: 'category',
+      data: ['New / unactioned', 'Read', 'Under investigation', 'Closed'],
+      axisLine: AXIS_DEFAULTS.axisLine,
+      axisLabel: AXIS_DEFAULTS.axisLabel,
+    },
+    series: [
+      {
+        name: 'Cases',
+        type: 'bar',
+        data: [3, 4, 11, 12].map((v, i) => ({
+          value: v,
+          itemStyle: { color: statusColors[i], borderRadius: [0, 4, 4, 0] },
+        })),
+        label: { show: true, position: 'right', color: VIZ.dataLabel },
+      },
+    ],
+    grid: { left: 20, right: 50, top: 10, bottom: 30, containLabel: true },
+  };
+  return <ReactECharts option={option} style={{ height: 180, width: '100%' }} />;
+}
+
+function DepartmentalPatternsChart() {
+  // Ranked low → high, stepped gradient across 7 bars
+  const deptColors = [
+    VIZ.gradient[0], VIZ.gradient[0], VIZ.gradient[1],
+    VIZ.gradient[1], VIZ.gradient[2], VIZ.gradient[3], VIZ.gradient[4],
+  ];
+  const option = {
+    tooltip: { trigger: 'axis' },
+    xAxis: {
+      type: 'value',
+      max: 8,
+      splitLine: AXIS_DEFAULTS.splitLine,
+      axisLabel: AXIS_DEFAULTS.axisLabel,
+    },
+    yAxis: {
+      type: 'category',
+      data: ['HR', 'Unknown', 'Engineering', 'Sales', 'Finance', 'Operations', 'Legal & Compliance'],
+      axisLine: AXIS_DEFAULTS.axisLine,
+      axisLabel: AXIS_DEFAULTS.axisLabel,
+    },
+    series: [
+      {
+        name: 'Cases',
+        type: 'bar',
+        data: [3, 4, 4, 4, 4, 5, 6].map((v, i) => ({
+          value: v,
+          itemStyle: { color: deptColors[i], borderRadius: [0, 4, 4, 0] },
+        })),
+        label: { show: true, position: 'right', color: VIZ.dataLabel },
+      },
+    ],
+    grid: { left: 20, right: 40, top: 10, bottom: 30, containLabel: true },
+  };
+  return <ReactECharts option={option} style={{ height: 260, width: '100%' }} />;
+}
+
+function ReportBody() {
+  return (
+    <Stack gap={3}>
+      <SectionHeader title="Acme Global Ltd — Speak Up programme" subtitle="As of 13 March 2026" />
+      <Typography variant="h2">Executive summary</Typography>
+      <Stack gap={2}>
+        <Typography variant="body1">
+          Acme Global Ltd's Speak Up programme has recorded a cumulative total of 30 cases since programme inception in Q1 2022, spanning six report categories
+          across five jurisdictions. Annual case volumes have grown steadily from 5 cases in 2022 to a projected run-rate of approximately 8–10 cases in 2026,
+          with Q1 2026 alone recording 4 submissions — the highest single-quarter total to date. This upward trajectory is broadly indicative of a maturing
+          reporting culture, though it also warrants heightened vigilance in case handling capacity.
+        </Typography>
+        <Typography variant="body1">
+          Of the 30 total cases, 40% are recorded as Closed and 36.7% are currently under active investigation, reflecting a reasonably active caseload.
+          However, 15 cases remain open as of 13 March 2026, and a significant proportion of these — 10 out of 15, or 67% — have been open for more than 180
+          days, representing the most pressing operational concern identified in this reporting period. The programme's overall health is satisfactory in terms
+          of intake diversity and geographic reach, but resolution timeliness requires immediate corrective attention.
+        </Typography>
+      </Stack>
+
+      <Typography variant="h2">Speak Up programme</Typography>
+
+      <Stack gap={3}>
+        <Stack gap={1}>
+          <Typography variant="h2">Case volume and trends</Typography>
+          <Typography variant="body1">
+            Since the programme's launch in January 2022, Acme Global Ltd has received 30 cases in total. Annual volumes have increased progressively:
+          </Typography>
+          <CaseVolumeTrendChart />
+          <List dense disablePadding sx={{ pl: 2, '& .MuiListItem-root': { borderBottom: 'none', borderBlockEnd: 'none', borderBottomWidth: 0 } }}>
+            {[
+              '5 cases recorded in 2022',
+              '6 cases recorded in 2023',
+              '7 cases recorded in 2024',
+              '8 cases recorded in 2025',
+              '4 cases submitted in Q1 2026 — the single busiest quarter on record',
+            ].map((item) => (
+              <ListItem key={item} divider={false} sx={{ display: 'list-item', listStyleType: 'disc', py: 0.25 }}>
+                <ListItemText primary={item} />
+              </ListItem>
+            ))}
+          </List>
+          <Typography variant="body1">
+            This growth pattern signals that awareness of the Speak Up channel is strengthening across the organisation, a positive indicator of programme
+            maturity and reporter confidence.
+          </Typography>
+        </Stack>
+
+        <Stack gap={1}>
+          <Typography variant="h2">Case categories and intake channels</Typography>
+          <Typography variant="body1">Cases by category:</Typography>
+          <CaseCategoriesChart />
+          <List dense disablePadding sx={{ pl: 2, '& .MuiListItem-root': { borderBottom: 'none', borderBlockEnd: 'none', borderBottomWidth: 0 } }}>
+            {[
+              'Harassment — 11 cases (most frequent)',
+              'Fraud — 9 cases',
+              'Discrimination — 6 cases',
+              'Health & Safety — 2 cases',
+              'Bribery — 1 case',
+              'Data Privacy — 1 case',
+            ].map((item) => (
+              <ListItem key={item} divider={false} sx={{ display: 'list-item', listStyleType: 'disc', py: 0.25 }}>
+                <ListItemText primary={item} />
+              </ListItem>
+            ))}
+          </List>
+          <Typography variant="body1">Cases by intake channel:</Typography>
+          <IntakeChannelsChart />
+          <List dense disablePadding sx={{ pl: 2, '& .MuiListItem-root': { borderBottom: 'none', borderBlockEnd: 'none', borderBottomWidth: 0 } }}>
+            {['App — 14 submissions (dominant channel)', 'Open Reporting — 7 submissions', 'Manual intake — 6 submissions', 'Vault Talk — 3 submissions'].map(
+              (item) => (
+                <ListItem key={item} divider={false} sx={{ display: 'list-item', listStyleType: 'disc', py: 0.25 }}>
+                  <ListItemText primary={item} />
+                </ListItem>
+              ),
+            )}
+          </List>
+          <Typography variant="body1">
+            Notably, all Bribery cases were submitted via Manual intake and all Data Privacy cases via Open Reporting, which may reflect the sensitivity
+            associated with these categories and a preference for specific reporting mechanisms in those contexts.
+          </Typography>
+        </Stack>
+
+        <Stack gap={1}>
+          <Typography variant="h2">Regional distribution</Typography>
+          <RegionalDistributionChart />
+          <List dense disablePadding sx={{ pl: 2, '& .MuiListItem-root': { borderBottom: 'none', borderBlockEnd: 'none', borderBottomWidth: 0 } }}>
+            {[
+              'United Kingdom — 11 cases',
+              'United States — 7 cases',
+              'Germany — 5 cases',
+              'Singapore — 4 cases',
+              'Unknown / no country attribution — 4 cases',
+            ].map((item) => (
+              <ListItem key={item} divider={false} sx={{ display: 'list-item', listStyleType: 'disc', py: 0.25 }}>
+                <ListItemText primary={item} />
+              </ListItem>
+            ))}
+          </List>
+          <Typography variant="body1">
+            The concentration of cases in GB and the US is broadly consistent with relative headcount and operational scale. The comparatively lower volume from
+            Singapore and Germany warrants investigation to determine whether this reflects genuine lower incidence or a cultural or structural barrier to
+            reporting.
+          </Typography>
+        </Stack>
+
+        <Stack gap={1}>
+          <Typography variant="h2">Case status and resolution timelines</Typography>
+          <CaseStatusChart />
+          <List dense disablePadding sx={{ pl: 2, '& .MuiListItem-root': { borderBottom: 'none', borderBlockEnd: 'none', borderBottomWidth: 0 } }}>
+            {['Closed — 12 cases (40%)', 'Under investigation — 11 cases (36.7%)', 'Read — 4 cases (13.3%)', 'New, unactioned — 3 cases (10%)'].map((item) => (
+              <ListItem key={item} divider={false} sx={{ display: 'list-item', listStyleType: 'disc', py: 0.25 }}>
+                <ListItemText primary={item} />
+              </ListItem>
+            ))}
+          </List>
+          <Typography variant="body1">
+            As of 13 March 2026, 15 cases remain open. Of these, 10 have exceeded 180 days since submission (67% of all open cases), which is significantly
+            beyond standard industry benchmarks recommending resolution within 90 days. Harassment (3 cases) and Fraud (4 cases) aged 180+ days together account
+            for 7 of the 10 most aged cases.
+          </Typography>
+        </Stack>
+
+        <Stack gap={1}>
+          <Typography variant="h2">Departmental patterns</Typography>
+          <DepartmentalPatternsChart />
+          <List dense disablePadding sx={{ pl: 2, '& .MuiListItem-root': { borderBottom: 'none', borderBlockEnd: 'none', borderBottomWidth: 0 } }}>
+            {[
+              'Legal & Compliance — 6 cases (highest)',
+              'Operations — 5 cases',
+              'Finance, Sales, and Engineering — 4 cases each',
+              'HR — 3 cases',
+              'Unknown department — 4 cases',
+            ].map((item) => (
+              <ListItem key={item} divider={false} sx={{ display: 'list-item', listStyleType: 'disc', py: 0.25 }}>
+                <ListItemText primary={item} />
+              </ListItem>
+            ))}
+          </List>
+          <Typography variant="body1">
+            The concentration of cases within Legal & Compliance is particularly noteworthy given that department's internal governance remit and warrants
+            specific management attention.
+          </Typography>
+        </Stack>
+      </Stack>
+
+      <Typography variant="h2">Recommended actions</Typography>
+      <List disablePadding sx={{ pl: 2 }}>
+        {[
+          {
+            primary: 'Implement an urgent case aging review for all 180+ day open cases',
+            secondary:
+              'Ten of the 15 currently open cases have exceeded 180 days without resolution, including 4 Fraud cases and 3 Harassment cases. A dedicated case review should be convened immediately to assess status, assign ownership, and establish target closure dates. Cases in the Read status (13.3%, 4 cases) should also be escalated to active investigation without delay.',
+          },
+          {
+            primary: 'Investigate under-reporting in Health & Safety, Bribery, and Data Privacy categories',
+            secondary:
+              'These three categories collectively account for only 4 of 30 cases (13%), which is disproportionately low relative to the operational and regulatory risk they represent. A targeted communications and training campaign should be launched to raise awareness of what constitutes a reportable concern in these areas.',
+          },
+          {
+            primary: 'Review reporting barriers in Germany and Singapore',
+            secondary:
+              'With only 5 and 4 cases respectively, these jurisdictions report at significantly lower rates than GB (11 cases) and the US (7 cases). Localised engagement initiatives — including training delivered in local languages and culturally adapted communication materials — should be deployed to assess and address any structural or cultural disincentives to reporting.',
+          },
+          {
+            primary: 'Investigate the elevated case volume attributed to the Legal & Compliance department',
+            secondary:
+              'With 6 cases attributing Legal & Compliance as the perpetrator department, the organisation should conduct a confidential internal review to understand the nature of these cases and whether systemic issues exist. Given the governance responsibilities of this function, any findings carry heightened reputational and regulatory risk.',
+          },
+          {
+            primary: 'Strengthen intake data quality to eliminate unknown department and country attributions',
+            secondary:
+              'Four cases carry no department attribution and 4 carry no country attribution, limiting the ability to conduct meaningful trend analysis. Intake process controls should be reviewed and enhanced to ensure complete perpetrator metadata is captured at submission or during initial case triage.',
+          },
+        ].map((action) => (
+          <ListItem key={action.primary} divider={false} alignItems="flex-start" sx={{ display: 'list-item', listStyleType: 'decimal', py: 1 }}>
+            <ListItemText
+              primary={
+                <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                  {action.primary}
+                </Typography>
+              }
+              secondary={action.secondary}
+              secondaryTypographyProps={{ variant: 'body1' }}
+            />
+          </ListItem>
+        ))}
+      </List>
+    </Stack>
+  );
+}
