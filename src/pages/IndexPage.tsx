@@ -86,7 +86,7 @@ function ChatContent() {
               <Button
                 variant="outlined"
                 startIcon={<ComplianceEthicsIcon />}
-                onClick={() => navigate('/compliance-reports')}
+                onClick={() => navigate('/connected-compliance')}
                 fullWidth
                 sx={{ whiteSpace: 'nowrap' }}
               >
