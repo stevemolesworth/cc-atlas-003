@@ -13,9 +13,6 @@ export default function Navigation() {
       <RoutedNavLink to="/compliance-reports" label="Connected Compliance">
         <ComplianceEthicsIcon slot="icon" />
       </RoutedNavLink>
-      <RoutedNavLink to="/report-v002" label="Report v002">
-        <ComplianceEthicsIcon slot="icon" />
-      </RoutedNavLink>
       <RoutedNavLink to="/settings" label="Settings">
         <SettingsIcon slot="icon" />
       </RoutedNavLink>

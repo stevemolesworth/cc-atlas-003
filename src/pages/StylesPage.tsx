@@ -1,5 +1,5 @@
-import { OverflowBreadcrumbs, PageHeader, SectionHeader } from '@diligentcorp/atlas-react-bundle';
-import { Box, Chip, Divider, List, ListItem, ListItemText, Stack, Typography } from '@mui/material';
+import { OverflowBreadcrumbs, PageHeader, SectionHeader, StatusIndicator } from '@diligentcorp/atlas-react-bundle';
+import { Badge, Box, Chip, Divider, List, ListItem, ListItemText, Stack, Typography } from '@mui/material';
 import { NavLink } from 'react-router';
 
 import PageLayout from '../components/PageLayout.js';
@@ -153,6 +153,78 @@ export default function StylesPage() {
             ))}
           </List>
         </Row>
+      </Stack>
+
+      <Divider />
+
+      {/* Pills & Badges */}
+      <SectionHeader title="Pills & Badges" />
+      <Stack gap={3}>
+
+        {/* StatusIndicator colors */}
+        <Row label="StatusIndicator">
+          <Stack direction="row" gap={1} flexWrap="wrap">
+            <StatusIndicator label="Warning" color="warning" />
+            <StatusIndicator label="Success" color="success" />
+            <StatusIndicator label="Error" color="error" />
+            <StatusIndicator label="Information" color="information" />
+            <StatusIndicator label="Disabled" color="disabled" />
+            <StatusIndicator label="Generic" color="generic" />
+            <StatusIndicator label="Subtle" color="subtle" />
+          </Stack>
+        </Row>
+
+        {/* StatusIndicator with shadow */}
+        <Row label='hasShadow'>
+          <Stack direction="row" gap={1} flexWrap="wrap">
+            <StatusIndicator label="Warning" color="warning" hasShadow />
+            <StatusIndicator label="Success" color="success" hasShadow />
+            <StatusIndicator label="Error" color="error" hasShadow />
+            <StatusIndicator label="Information" color="information" hasShadow />
+          </Stack>
+        </Row>
+
+        {/* Chip sizes */}
+        <Row label='Chip sizes'>
+          <Stack direction="row" gap={1} alignItems="center">
+            <Chip label="Small" size="small" />
+            <Chip label="Large" size="large" />
+          </Stack>
+        </Row>
+
+        {/* Chip variants */}
+        <Row label='Chip variants'>
+          <Stack direction="row" gap={1} flexWrap="wrap">
+            <Chip label="Default" />
+            <Chip label="Outlined" variant="outlined" />
+            <Chip label="Shape" variant="shape" />
+          </Stack>
+        </Row>
+
+        {/* Chip — clickable */}
+        <Row label='Chip clickable'>
+          <Stack direction="row" gap={1} flexWrap="wrap">
+            <Chip label="Clickable" onClick={() => {}} />
+            <Chip label="Deletable" onDelete={() => {}} />
+            <Chip label="Both" onClick={() => {}} onDelete={() => {}} />
+          </Stack>
+        </Row>
+
+        {/* MUI Badge */}
+        <Row label='Badge'>
+          <Stack direction="row" gap={3} alignItems="center">
+            <Badge badgeContent={4} color="primary">
+              <Chip label="Primary" />
+            </Badge>
+            <Badge badgeContent={12} color="error">
+              <Chip label="Error" />
+            </Badge>
+            <Badge variant="dot" color="success">
+              <Chip label="Dot" />
+            </Badge>
+          </Stack>
+        </Row>
+
       </Stack>
     </PageLayout>
   );
