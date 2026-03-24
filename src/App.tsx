@@ -5,6 +5,7 @@ import './styles.css';
 import Navigation from './Navigation.js';
 import ComplianceReportsPage from './pages/ComplianceReportsPage.js';
 import IndexPage from './pages/IndexPage.js';
+import ReportV002Page from './pages/ReportV002Page.js';
 import SettingsPage from './pages/SettingsPage.js';
 import StylesPage from './pages/StylesPage.js';
 
@@ -21,6 +22,7 @@ export default function App() {
       >
         <Route index element={<IndexPage />} />
         <Route path="compliance-reports" element={<ComplianceReportsPage />} />
+        <Route path="report-v002" element={<ReportV002Page />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="styles" element={<StylesPage />} />
       </Route>

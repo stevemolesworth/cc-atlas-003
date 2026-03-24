@@ -1,9 +1,20 @@
 {
   "name": "@diligentcorp/atlas-mui-vite-prototype",
-  "private": true,
   "version": "0.0.0",
-  "type": "module",
+  "private": true,
   "description": "A Vite project for prototyping Atlas with MUI",
+  "homepage": "https://github.com/stevemolesworth/cc-atlas-003#readme",
+  "bugs": {
+    "url": "https://github.com/stevemolesworth/cc-atlas-003/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stevemolesworth/cc-atlas-003.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "index.js",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
