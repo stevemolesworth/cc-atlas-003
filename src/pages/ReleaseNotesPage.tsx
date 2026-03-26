@@ -5,6 +5,18 @@ import PageLayout from '../components/PageLayout.js';
 
 const RELEASES = [
   {
+    version: 'v6',
+    date: '26 March 2026',
+    sections: [
+      {
+        title: 'Reference Assets',
+        items: [
+          'New Reference Assets page added to the main nav — links to internal design and build documents (Discovery Brief, AI PRDs)',
+        ],
+      },
+    ],
+  },
+  {
     version: 'v5',
     date: '25 March 2026',
     sections: [
