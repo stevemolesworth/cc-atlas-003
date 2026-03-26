@@ -49,7 +49,8 @@ const REPORTS = [
   {
     title: 'Quarterly E&C Compliance Report - Q1 2026',
     scope: 'Speak Up · Policy Manager · Training',
-    date: '19 March 2026',
+    date: '2026-03-19',
+    dateLabel: '19 March 2026',
     status: 'Deteriorating',
     statusColor: 'error' as const,
     type: 'Configured' as const,
@@ -58,7 +59,8 @@ const REPORTS = [
   {
     title: 'Quarterly E&C Compliance Report - Q4 2025',
     scope: 'Speak Up · Policy Manager · Training',
-    date: '21 December 2025',
+    date: '2025-12-21',
+    dateLabel: '21 December 2025',
     status: 'Stable',
     statusColor: 'success' as const,
     type: 'Standard' as const,
@@ -67,7 +69,8 @@ const REPORTS = [
   {
     title: 'Quarterly E&C Compliance Report - Q3 2025',
     scope: 'Speak Up · Policy Manager · Training',
-    date: '22 September 2025',
+    date: '2025-09-22',
+    dateLabel: '22 September 2025',
     status: 'Stable',
     statusColor: 'success' as const,
     type: 'Standard' as const,
@@ -76,7 +79,8 @@ const REPORTS = [
   {
     title: 'Quarterly E&C Compliance Report - Q2 2025',
     scope: 'Speak Up · Policy Manager · Training',
-    date: '23 June 2025',
+    date: '2025-06-23',
+    dateLabel: '23 June 2025',
     status: 'Improving',
     statusColor: 'information' as const,
     type: 'Standard' as const,
@@ -85,7 +89,8 @@ const REPORTS = [
   {
     title: 'Quarterly E&C Compliance Report - Q1 2025',
     scope: 'Speak Up · Policy Manager · Training',
-    date: '24 March 2025',
+    date: '2025-03-24',
+    dateLabel: '24 March 2025',
     status: 'Stable',
     statusColor: 'success' as const,
     type: 'Standard' as const,
@@ -223,7 +228,7 @@ export default function ReportsPage() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {visibleRows.map(({ title, scope, date, status, statusColor, type, to }) => (
+              {visibleRows.map(({ title, scope, dateLabel, status, statusColor, type, to }) => (
                 <TableRow key={title} hover={!!to} sx={{ opacity: to ? 1 : 0.5 }}>
                   <TableCell>
                     {to ? (
@@ -238,7 +243,7 @@ export default function ReportsPage() {
                     <Typography variant="textSm" color="text.secondary">{scope}</Typography>
                   </TableCell>
                   <TableCell>
-                    <Typography variant="textSm" color="text.secondary">{date}</Typography>
+                    <Typography variant="textSm" color="text.secondary">{dateLabel}</Typography>
                   </TableCell>
                   <TableCell>
                     <StatusIndicator label={status} color={statusColor} />
