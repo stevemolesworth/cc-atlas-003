@@ -1,8 +1,8 @@
 # Connected Compliance Atlas — Context for Claude
 
 ## Current State
-- Version: v6
-- Last updated: 2026-03-26
+- Version: v7
+- Last updated: 2026-03-27
 
 ## What This Is
 A Connected Compliance prototype built with Vite + React + MUI v7 + Diligent Atlas design system.
@@ -51,6 +51,7 @@ Always pass the existing `prototype_id` for that branch. This reuses the Vercel 
 | v4 | `ec686b28-5912-426d-b3f5-23f2f317b5d7` | cc-atlas-004.vercel.app | ✅ Working |
 | v5 | `851276d5-e6a8-4874-9f62-b1266c4e820e` | cc-atlas-005.vercel.app | ✅ Working |
 | v6 | `c4f52374-6e08-4cb0-9670-d9c4075e242a` | cc-atlas-006.vercel.app | ⏳ Awaiting fix |
+| v7 | `eb1b70c5-55ba-477e-9fa8-0d92f9422e36` | cc-atlas-007.vercel.app | ⏳ Awaiting fix |
 
 ### vercel.json (must remain at repo root)
 ```json
