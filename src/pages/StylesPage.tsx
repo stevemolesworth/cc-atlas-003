@@ -263,17 +263,12 @@ export default function StylesPage() {
             <Button variant="text" sx={{ color: 'error.main', '&:hover': { bgcolor: 'error.50' } }}>Text</Button>
           </Stack>
         </Row>
-        {/* @ts-ignore — Atlas variant not in MUI types */}
-        <Row label='variant="ai"'>
+        <Row label='color="ai"'>
           <Stack direction="row" gap={1} alignItems="center">
-            {/* @ts-ignore */}
-            <Button variant="ai" size="small">Small</Button>
-            {/* @ts-ignore */}
-            <Button variant="ai">Medium</Button>
-            {/* @ts-ignore */}
-            <Button variant="ai" size="large">Large</Button>
-            {/* @ts-ignore */}
-            <Button variant="ai" disabled>Disabled</Button>
+            <Button variant="contained" color="ai" size="small">Small</Button>
+            <Button variant="contained" color="ai">Medium</Button>
+            <Button variant="contained" color="ai" size="large">Large</Button>
+            <Button variant="contained" color="ai" disabled>Disabled</Button>
           </Stack>
         </Row>
       </Stack>

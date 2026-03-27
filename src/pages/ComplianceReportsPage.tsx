@@ -315,8 +315,7 @@ export default function ComplianceReportsPage() {
                       <Button size="small" variant="outlined">
                         Create action
                       </Button>
-                      {/* @ts-ignore — Atlas Button supports variant="ai" */}
-                      <Button size="small" variant="ai" onClick={() => setAiModalSignal(signal)}>
+                      <Button size="small" variant="contained" color="ai" onClick={() => setAiModalSignal(signal)}>
                         Create action with AI
                       </Button>
                     </Stack>
