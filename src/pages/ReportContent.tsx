@@ -121,7 +121,7 @@ export function ReportBody({ executiveSummaryRebuilt }: { executiveSummaryRebuil
           { href: '#speak-up', label: '1. Speak Up Programme' },
           { href: '#policy', label: '2. Policy Programme' },
           { href: '#signals', label: '3. Cross-Domain Risk Signals' },
-          { href: '#actions', label: '4. Recommended Actions' },
+          // { href: '#actions', label: '4. Recommended Actions' }, // TODO: move to dedicated page
         ].map(({ href, label }) => (
           <MuiLink key={href} href={href} underline="hover" variant="body1">
             {label}
@@ -324,29 +324,7 @@ export function ReportBody({ executiveSummaryRebuilt }: { executiveSummaryRebuil
         </Stack>
       ))}
 
-      <Divider />
-
-      <Typography id="actions" variant="h2">4. Recommended Actions</Typography>
-
-      {ACTIONS.map(({ title, what, why, owner, timeframe }) => (
-        <Box key={title} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 2 }}>
-          <Stack gap={1}>
-            <Typography variant="h3" component="h4">{title}</Typography>
-            <List dense disablePadding sx={{ pl: 2 }}>
-              {[
-                { label: 'What', text: what },
-                { label: 'Why', text: why },
-                { label: 'Owner', text: owner },
-                { label: 'Timeframe', text: timeframe },
-              ].map(({ label, text }) => (
-                <ListItem key={label} sx={{ display: 'list-item', listStyleType: 'disc', py: 0.25 }}>
-                  <ListItemText primary={<><strong>{label}:</strong> {text}</>} />
-                </ListItem>
-              ))}
-            </List>
-          </Stack>
-        </Box>
-      ))}
+      {/* TODO: Section 4 Recommended Actions hidden — content preserved in ACTIONS constant above, to be moved to a dedicated page */}
     </Stack>
   );
 }

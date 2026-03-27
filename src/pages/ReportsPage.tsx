@@ -3,6 +3,7 @@ import {
   Box,
   Button,
   Chip,
+  Link as MuiLink,
   Container,
   Divider,
   FormControl,
@@ -230,7 +231,13 @@ export default function ReportsPage() {
                 {visibleRows.map(({ title, dateLabel, status, statusColor, type, to }) => (
                   <TableRow key={title} hover={false} sx={{ opacity: to ? 1 : 0.5 }}>
                     <TableCell>
-                      <Typography variant="labelSm" sx={{ fontWeight: 600 }}>{title}</Typography>
+                      {to ? (
+                        <MuiLink component="button" underline="hover" onClick={() => navigate(to)} sx={{ textAlign: 'left' }}>
+                          <Typography variant="labelSm" sx={{ fontWeight: 600 }}>{title}</Typography>
+                        </MuiLink>
+                      ) : (
+                        <Typography variant="labelSm" sx={{ fontWeight: 600 }}>{title}</Typography>
+                      )}
                     </TableCell>
                     <TableCell sx={{ whiteSpace: 'nowrap' }}>
                       <Typography variant="textSm" color="text.secondary">{dateLabel}</Typography>
@@ -302,8 +309,8 @@ export default function ReportsPage() {
                     <Button variant="contained" fullWidth onClick={() => { setModalOpen(false); navigate('/reports/q1-2026'); }}>
                       View report
                     </Button>
-                    <Button variant="outlined" fullWidth onClick={() => openModal()}>
-                      Create another report
+                    <Button variant="outlined" fullWidth sx={{ '&&': { color: '#d32f2f', borderColor: '#d32f2f', '&:hover': { borderColor: '#b71c1c', bgcolor: 'rgba(211,47,47,0.04)' } } }}>
+                      Delete report
                     </Button>
                     <Button variant="text" fullWidth onClick={() => setModalOpen(false)}>
                       Close
@@ -377,6 +384,17 @@ export default function ReportsPage() {
                       </Box>
                     );
                   })}
+                  <Button
+                    variant="outlined"
+                    fullWidth
+                    onClick={() => {
+                      if (stepIntervalRef.current) clearInterval(stepIntervalRef.current);
+                      setIsGenerating(false);
+                      setModalOpen(false);
+                    }}
+                  >
+                    Cancel report generation
+                  </Button>
                 </Stack>
               )}
             </Box>
