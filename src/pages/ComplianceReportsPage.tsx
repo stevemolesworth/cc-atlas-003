@@ -278,6 +278,37 @@ export default function ComplianceReportsPage() {
 
         <Divider />
 
+        {/* Compliance Training Plan entry point */}
+        <Box>
+          <Typography variant="h2" sx={{ mb: 2 }}>Training Plan</Typography>
+          <Box
+            sx={({ palette }) => ({
+              border: '1px solid',
+              borderColor: palette.divider,
+              borderRadius: 1,
+              p: 2,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2,
+            })}
+          >
+            <Box sx={{ flex: 1 }}>
+              <Stack direction="row" alignItems="center" gap={1} mb={0.5}>
+                <Typography variant="labelLg" sx={{ fontWeight: 700 }}>Compliance Training Plan 2026</Typography>
+                <StatusIndicator label="In progress" color="information" />
+              </Stack>
+              <Typography variant="body1" color="text.secondary" sx={{ fontSize: '0.85rem' }}>
+                18 modules proposed · 7h 30min estimated · 4 jurisdictions · Acme Corp
+              </Typography>
+            </Box>
+            <MuiLink component={NavLink} to="/training-plan" underline="none">
+              <Button variant="outlined" size="small">View plan</Button>
+            </MuiLink>
+          </Box>
+        </Box>
+
+        <Divider />
+
         {/* Cross-domain risk signals */}
         <Box>
           <Typography variant="h2" sx={{ mb: 2 }}>Cross-domain risk signals</Typography>

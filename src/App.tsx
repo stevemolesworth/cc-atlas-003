@@ -9,6 +9,7 @@ import IndexPage from './pages/IndexPage.js';
 import ReportEditPage from './pages/ReportEditPage.js';
 import ReportSharePage from './pages/ReportSharePage.js';
 import ReferenceAssetsPage from './pages/ReferenceAssetsPage.js';
+import TrainingPlanPage from './pages/TrainingPlanPage.js';
 import ReleaseNotesPage from './pages/ReleaseNotesPage.js';
 import ReportsPage from './pages/ReportsPage.js';
 import SettingsPage from './pages/SettingsPage.js';
@@ -51,6 +52,7 @@ export default function App() {
         <Route path="reports" element={<ReportsPage />} />
         <Route path="reports/q1-2026" element={<ReportEditPage />} />
         <Route path="reports/q1-2026/share" element={<ReportSharePage />} />
+        <Route path="training-plan" element={<TrainingPlanPage />} />
         <Route path="reference-assets" element={<ReferenceAssetsPage />} />
         <Route path="release-notes" element={<ReleaseNotesPage />} />
         <Route path="settings" element={<SettingsPage />} />
