@@ -525,7 +525,7 @@ function BookingWidget({ onConfirm }: { onConfirm: (slot: string) => void }) {
 
 // ─── Chat Panel ───────────────────────────────────────────────────────────────
 
-function ChatPanel({ phase, onGenerate }: { phase: Phase; onGenerate: (scope: 'global' | 'groups', groups: string[]) => void }) {
+function ChatPanel({ phase, onGenerate }: { phase: Phase; onGenerate: (scope: 'global' | 'groups', groups: string[], products: string[]) => void }) {
   const [chatStep, setChatStep] = useState<ChatStep>('org-confirm');
   const [messages, setMessages] = useState<ChatMsg[]>(() => [
     {
@@ -559,7 +559,7 @@ function ChatPanel({ phase, onGenerate }: { phase: Phase; onGenerate: (scope: 'g
         {
           role: 'ai',
           text: hasSignals
-            ? `Your plan is ready — ${TOPICS.length} modules across 4 jurisdictions, est. ${formatDuration(TOTAL_DURATION)} total.\n\nI've pulled in signals from your connected products to prioritise the modules most relevant to your current risk landscape:`
+            ? `Your plan is ready — ${TOPICS.length} modules across 4 jurisdictions, est. ${formatDuration(TOTAL_DURATION)} total.\n\nSignal incorporated from ${signals.map((s) => s.product).join(', ')} to prioritise the most relevant modules:`
             : `Your plan is ready — ${TOPICS.length} modules across 4 jurisdictions, est. ${formatDuration(TOTAL_DURATION)} total. Are you happy with it?`,
           signals: hasSignals ? signals : undefined,
           actions: ['Looks good', 'Make changes'],
@@ -623,14 +623,14 @@ function ChatPanel({ phase, onGenerate }: { phase: Phase; onGenerate: (scope: 'g
         { role: 'user', text: 'Global plan — all employees.' },
         { role: 'ai', text: "Perfect. Generating your 2026 compliance training plan now — this will only take a moment." },
       );
-      onGenerate('global', []);
+      onGenerate('global', [], products);
     } else {
       const labels = BUSINESS_UNITS.filter((b) => selectedGroups.includes(b.key)).map((b) => b.label);
       addMsgs(
         { role: 'user', text: `Group plans: ${labels.join(', ')}.` },
         { role: 'ai', text: `Generating separate plans for ${labels.join(', ')} — this will only take a moment.` },
       );
-      onGenerate('groups', selectedGroups);
+      onGenerate('groups', selectedGroups, products);
     }
   }
 
@@ -717,13 +717,13 @@ function ChatPanel({ phase, onGenerate }: { phase: Phase; onGenerate: (scope: 'g
                 </Stack>
 
                 {/* Message text */}
-                <Typography variant="body1" sx={{ fontSize: '0.875rem', lineHeight: 1.6, mb: (msg.signals || hasWidget(msg)) ? 1.5 : 0, whiteSpace: 'pre-line' }}>
+                <Typography variant="body1" sx={{ fontSize: '0.875rem', lineHeight: 1.6, mb: (msg.signals || (hasWidget(msg) && (!msg.widget || !isWidgetAnswered(msg.widget)))) ? 1.5 : 0, whiteSpace: 'pre-line' }}>
                   {msg.text}
                 </Typography>
 
                 {/* Product signal callouts */}
                 {msg.signals && msg.signals.length > 0 && (
-                  <Stack gap={1} mb={hasWidget(msg) ? 1.5 : 0}>
+                  <Stack gap={1} mb={(hasWidget(msg) && (!msg.widget || !isWidgetAnswered(msg.widget))) ? 1.5 : 0}>
                     {msg.signals.map((sig) => (
                       <Box
                         key={sig.product}
@@ -747,7 +747,7 @@ function ChatPanel({ phase, onGenerate }: { phase: Phase; onGenerate: (scope: 'g
                 )}
 
                 {/* Widget card with subtle gradient */}
-                {hasWidget(msg) && (
+                {hasWidget(msg) && (!msg.widget || !isWidgetAnswered(msg.widget)) && (
                   <Box
                     sx={{
                       borderRadius: 2,
@@ -859,7 +859,7 @@ function ChatPanel({ phase, onGenerate }: { phase: Phase; onGenerate: (scope: 'g
 
 // ─── Canvas Panel ─────────────────────────────────────────────────────────────
 
-function CanvasPanel({ scope, selectedGroups }: { scope: 'global' | 'groups'; selectedGroups: string[] }) {
+function CanvasPanel({ scope, selectedGroups, selectedProducts }: { scope: 'global' | 'groups'; selectedGroups: string[]; selectedProducts: string[] }) {
   const [activeTab, setActiveTab] = useState(0);
   const [selectedModule, setSelectedModule] = useState<TrainingTopic | null>(null);
   const [removedIds, setRemovedIds] = useState<Set<number>>(new Set());
@@ -899,19 +899,38 @@ function CanvasPanel({ scope, selectedGroups }: { scope: 'global' | 'groups'; se
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <Paper variant="outlined" sx={{ borderRadius: 1, p: 2, mb: 2, display: 'flex', gap: 3, flexWrap: 'wrap', flexShrink: 0 }}>
+      <Stack direction="row" gap={1.5} mb={2} flexShrink={0}>
         {[
-          { label: 'Modules in plan', value: String(inPlanTopics.length) },
-          { label: 'Estimated completion', value: formatDuration(groupDuration) },
+          { label: 'Modules in plan', value: String(inPlanTopics.length), highlight: true },
+          { label: 'Estimated completion', value: formatDuration(groupDuration), sub: 'total training time' },
           { label: 'Jurisdictions', value: '4' },
           { label: 'Business units', value: scope === 'global' ? 'Org-wide' : String(selectedGroups.length) },
         ].map((s) => (
-          <Box key={s.label}>
-            <Typography variant="labelXs" color="text.secondary">{s.label}</Typography>
-            <Typography variant="h5" sx={{ fontWeight: 700, lineHeight: 1.2 }}>{s.value}</Typography>
+          <Box
+            key={s.label}
+            sx={{
+              flex: 1,
+              border: '1px solid',
+              borderColor: s.highlight ? '#E6A817' : 'rgba(0,0,0,0.1)',
+              borderRadius: 2,
+              p: 2,
+              bgcolor: s.highlight ? '#FFFBEB' : 'background.paper',
+            }}
+          >
+            <Typography variant="body1" color="text.secondary" sx={{ fontSize: '0.8rem', mb: 0.75 }}>
+              {s.label}
+            </Typography>
+            <Typography variant="h5" sx={{ fontWeight: 700, lineHeight: 1.1, color: s.highlight ? '#B45309' : 'text.primary' }}>
+              {s.value}
+            </Typography>
+            {s.sub && (
+              <Typography variant="body1" color="text.secondary" sx={{ fontSize: '0.72rem', mt: 0.5 }}>
+                {s.sub}
+              </Typography>
+            )}
           </Box>
         ))}
-      </Paper>
+      </Stack>
 
       {tabs.length > 1 && (
         <Tabs
@@ -928,7 +947,7 @@ function CanvasPanel({ scope, selectedGroups }: { scope: 'global' | 'groups'; se
       )}
 
       <Box sx={{ flex: 1, overflow: 'auto' }}>
-        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 1.5 }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1.5 }}>
           {groupTopics.map(({ topic, inPlan }) => (
             <ModuleCard
               key={topic.id}
@@ -967,12 +986,14 @@ export default function TrainingPlanPage() {
   const [phase, setPhase] = useState<Phase>('setup');
   const [scope, setScope] = useState<'global' | 'groups'>('global');
   const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
+  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [genStage, setGenStage] = useState(0);
   const [genProgress, setGenProgress] = useState(0);
 
-  function handleGenerate(s: 'global' | 'groups', g: string[]) {
+  function handleGenerate(s: 'global' | 'groups', g: string[], p: string[]) {
     setScope(s);
     setSelectedGroups(g);
+    setSelectedProducts(p);
     setPhase('generating');
   }
 
@@ -1081,7 +1102,7 @@ useEffect(() => {
                 </Box>
               </Box>
             )}
-            {phase === 'canvas' && <CanvasPanel scope={scope} selectedGroups={selectedGroups} />}
+            {phase === 'canvas' && <CanvasPanel scope={scope} selectedGroups={selectedGroups} selectedProducts={selectedProducts} />}
           </Box>
         </Box>
       )}
