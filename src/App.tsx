@@ -124,7 +124,7 @@ function AppShell() {
   }
 
   return (
-    <AppLayout orgName="Connected Compliance">
+    <AppLayout orgName="Connected Compliance" navigation={<></>}>
       <BrandedHeader onLogoClick={() => setDrawerOpen(true)} />
 
       <Drawer anchor="left" open={drawerOpen} onClose={() => setDrawerOpen(false)}>

@@ -139,11 +139,9 @@ function OrgConfirmWidget({ answered, onConfirm }: { answered: boolean; onConfir
 
 function ProductSelectWidget({
   answered,
-  selectedKeys,
   onConfirm,
 }: {
   answered: boolean;
-  selectedKeys: string[];
   onConfirm: (keys: string[]) => void;
 }) {
   const [selected, setSelected] = useState<string[]>([]);
@@ -199,11 +197,9 @@ function ProductSelectWidget({
 
 function ScopeSelectWidget({
   answered,
-  selectedScope,
   onConfirm,
 }: {
   answered: boolean;
-  selectedScope: 'global' | 'groups';
   onConfirm: (scope: 'global' | 'groups', groups: string[]) => void;
 }) {
   const [scope, setScope] = useState<'global' | 'groups'>('global');
@@ -540,7 +536,6 @@ function ChatPanel({ phase, onGenerate }: { phase: Phase; onGenerate: (scope: 'g
     },
   ]);
   const [products, setProducts] = useState<string[]>([]);
-  const [scope, setScope] = useState<'global' | 'groups'>('global');
   const [input, setInput] = useState('');
   const [bookingConfirmed, setBookingConfirmed] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -622,7 +617,6 @@ function ChatPanel({ phase, onGenerate }: { phase: Phase; onGenerate: (scope: 'g
   }
 
   function handleScopeConfirm(selectedScope: 'global' | 'groups', selectedGroups: string[]) {
-    setScope(selectedScope);
     setChatStep('plan-chat');
     if (selectedScope === 'global') {
       addMsgs(
@@ -693,9 +687,7 @@ function ChatPanel({ phase, onGenerate }: { phase: Phase; onGenerate: (scope: 'g
     });
   }
 
-  const lastMsg = messages[messages.length - 1];
   const isPlanChat = chatStep === 'plan-chat';
-  const showActions = isPlanChat && phase === 'canvas' && lastMsg?.role === 'ai' && lastMsg.actions && !bookingConfirmed;
 
   const hasWidget = (msg: ChatMsg) => !!msg.widget || (msg.actions && msg.actions.length > 0);
 
@@ -768,10 +760,10 @@ function ChatPanel({ phase, onGenerate }: { phase: Phase; onGenerate: (scope: 'g
                       <OrgConfirmWidget answered={isWidgetAnswered('org-confirm')} onConfirm={handleOrgConfirm} />
                     )}
                     {msg.widget === 'product-select' && (
-                      <ProductSelectWidget answered={isWidgetAnswered('product-select')} selectedKeys={products} onConfirm={handleProductsConfirm} />
+                      <ProductSelectWidget answered={isWidgetAnswered('product-select')} onConfirm={handleProductsConfirm} />
                     )}
                     {msg.widget === 'scope-select' && (
-                      <ScopeSelectWidget answered={isWidgetAnswered('scope-select')} selectedScope={scope} onConfirm={handleScopeConfirm} />
+                      <ScopeSelectWidget answered={isWidgetAnswered('scope-select')} onConfirm={handleScopeConfirm} />
                     )}
                     {msg.widget === 'booking' && !bookingConfirmed && (
                       <BookingWidget onConfirm={handleBookingConfirm} />

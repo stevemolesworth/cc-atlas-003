@@ -114,7 +114,6 @@ function ComplianceActivity() {
           }}
         />
         <Select
-          size="small"
           value={productFilter}
           onChange={(e) => setProductFilter(e.target.value)}
           sx={{ minWidth: 140 }}

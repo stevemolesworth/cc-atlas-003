@@ -436,7 +436,6 @@ export default function ComplianceReportsPage() {
               }}
             />
             <Select
-              size="small"
               value={reportStatusFilter}
               onChange={(e) => setReportStatusFilter(e.target.value)}
               sx={{ minWidth: 140 }}
