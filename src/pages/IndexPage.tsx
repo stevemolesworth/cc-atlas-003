@@ -223,7 +223,6 @@ function ChatContent() {
 
   return (
     <>
-      <Typography variant="h1" sx={{ p: 2 }}>Test</Typography>
       <AIChatUI
         title="Ask your AI assistant anything."
         subtitle="Type a request or view the Assist Tools available below."
