@@ -860,7 +860,7 @@ function ChatPanel({ phase, onGenerate }: { phase: Phase; onGenerate: (scope: 'g
 
 // ─── Canvas Panel ─────────────────────────────────────────────────────────────
 
-function CanvasPanel({ scope, selectedGroups, selectedProducts }: { scope: 'global' | 'groups'; selectedGroups: string[]; selectedProducts: string[] }) {
+function CanvasPanel({ scope, selectedGroups, selectedProducts: _selectedProducts }: { scope: 'global' | 'groups'; selectedGroups: string[]; selectedProducts: string[] }) {
   const [activeTab, setActiveTab] = useState(0);
   const [selectedModule, setSelectedModule] = useState<TrainingTopic | null>(null);
   const [removedIds, setRemovedIds] = useState<Set<number>>(new Set());
