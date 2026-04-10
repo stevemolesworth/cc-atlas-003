@@ -22,6 +22,7 @@ import {
   Typography,
 } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
+import { useLocation } from 'react-router';
 
 import PageLayout from '../components/PageLayout.js';
 import { BOOKING_SLOTS, BUSINESS_UNITS, BUKey, TOPICS, TOTAL_DURATION, TrainingTopic } from '../data/trainingTopics.js';
@@ -983,7 +984,9 @@ function CanvasPanel({ scope, selectedGroups, selectedProducts }: { scope: 'glob
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function TrainingPlanPage() {
-  const [phase, setPhase] = useState<Phase>('setup');
+  const location = useLocation();
+  const initialPhase: Phase = (location.state as { phase?: Phase } | null)?.phase ?? 'setup';
+  const [phase, setPhase] = useState<Phase>(initialPhase);
   const [scope, setScope] = useState<'global' | 'groups'>('global');
   const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);

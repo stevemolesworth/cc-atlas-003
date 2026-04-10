@@ -164,7 +164,7 @@ function ComplianceActivity() {
                 variant="outlined"
                 size="small"
                 sx={{ flexShrink: 0 }}
-                onClick={() => activity.to && navigate(activity.to)}
+                onClick={() => activity.to && navigate(activity.to, { state: { phase: 'canvas' } })}
               >
                 View
               </Button>
