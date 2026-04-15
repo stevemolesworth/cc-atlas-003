@@ -23,7 +23,6 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import BoardGroupIcon from '@diligentcorp/atlas-react-bundle/icons/BoardGroup';
 import ReportsIcon from '@diligentcorp/atlas-react-bundle/icons/Reports';
 import ComplianceEducationIcon from '@diligentcorp/atlas-react-bundle/icons/ComplianceEducation';
 import { useState } from 'react';
@@ -233,9 +232,6 @@ function ChatContent() {
             slotProps={{ textField: { placeholder: 'Type your message...' } }}
             contentBelow={
               <Stack direction="row" gap={1} justifyContent="center">
-                <Button variant="outlined" startIcon={<BoardGroupIcon />} sx={{ borderRadius: '99px', whiteSpace: 'nowrap' }}>
-                  Appoint a Board Member
-                </Button>
                 <Button
                   variant="outlined"
                   startIcon={<ReportsIcon />}
